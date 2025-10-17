@@ -27,12 +27,12 @@ const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(
-    35,
-    1, // Fixed aspect ratio
+    45,
+    container.clientWidth / container.clientHeight,
     0.1,
     1000
 );
-camera.position.set(0, 0, 8);
+camera.position.set(0, 0, 6);
 
 const renderer = new THREE.WebGLRenderer({ 
     alpha: true, 
@@ -45,7 +45,7 @@ renderer.toneMappingExposure = 1.3;
 renderer.outputEncoding = THREE.sRGBEncoding;
 container.appendChild(renderer.domElement);
 
-// Lighting - Brighter for cyan background
+// Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 1);
 scene.add(ambientLight);
 
@@ -61,13 +61,13 @@ const rimLight = new THREE.DirectionalLight(0xffffff, 0.8);
 rimLight.position.set(0, -5, 3);
 scene.add(rimLight);
 
-// Controls - NO ZOOM
+// Controls - NO ZOOM, AUTO-ROTATE
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.autoRotate = true;
-controls.autoRotateSpeed = 2;
-controls.enableZoom = false; // DISABLED
+controls.autoRotateSpeed = 1.5;
+controls.enableZoom = false;
 controls.enablePan = false;
 
 // Load Model
@@ -79,23 +79,28 @@ loader.load(
     (gltf) => {
         model = gltf.scene;
         
-        // Center and scale BIGGER
+        // Calculate bounds and center
         const box = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
         
+        // Center the model
         model.position.sub(center);
         
+        // Scale to reasonable size (adjusted for your model)
         const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 5 / maxDim; // BIGGER
+        const targetSize = 3; // Target size in scene units
+        const scale = targetSize / maxDim;
         model.scale.setScalar(scale);
         
-        // Tilt
-        model.rotation.x = Math.PI / 12;
-        model.rotation.z = -Math.PI / 24;
+        // Tilt for dynamic look
+        model.rotation.x = Math.PI / 10;
+        model.rotation.z = -Math.PI / 20;
         
         scene.add(model);
-        console.log('✓ Model loaded');
+        console.log('✓ Model loaded and scaled');
+        console.log('Model dimensions:', size);
+        console.log('Scale factor:', scale);
         
         initScrollAnimations();
     },
@@ -148,8 +153,11 @@ function initScrollAnimations() {
     
     sections.forEach((section) => {
         const position = section.getAttribute('data-position');
-        const targetX = position === 'left' ? -30 : 30;
-        const rotationY = position === 'left' ? Math.PI / 3 : -Math.PI / 3;
+        
+        // On mobile, don't move horizontally
+        const isMobile = window.innerWidth < 968;
+        const targetX = isMobile ? 0 : (position === 'left' ? -25 : 25);
+        const rotationY = position === 'left' ? Math.PI / 4 : -Math.PI / 4;
         
         ScrollTrigger.create({
             trigger: section,
@@ -159,11 +167,13 @@ function initScrollAnimations() {
             onUpdate: (self) => {
                 const progress = self.progress;
                 
+                // Move container
                 gsap.to(container, {
                     x: `${targetX * progress}vw`,
                     duration: 0.3,
                 });
                 
+                // Rotate model
                 if (model) {
                     gsap.to(model.rotation, {
                         y: rotationY * progress,
@@ -174,31 +184,34 @@ function initScrollAnimations() {
         });
     });
     
-    // CTA: Center
+    // CTA: Return to center
     ScrollTrigger.create({
         trigger: '.cta-section',
         start: 'top center',
         end: 'center center',
         scrub: 1,
         onUpdate: (self) => {
+            const progress = self.progress;
+            
             gsap.to(container, {
                 x: 0,
-                scale: 1.3,
+                scale: 1.1,
                 duration: 0.5,
             });
             
             if (model) {
                 gsap.to(model.rotation, {
-                    y: Math.PI * 2,
+                    y: Math.PI * 2 * progress,
                     duration: 0.5,
                 });
             }
             
-            controls.autoRotate = self.progress > 0.5;
+            // Continue auto-rotate
+            controls.autoRotate = true;
         }
     });
     
-    console.log('✓ Animations ready');
+    console.log('✓ Scroll animations initialized');
 }
 
 // Copy Coupon
@@ -224,8 +237,10 @@ copyBtn.addEventListener('click', () => {
     });
 });
 
-// Resize
+// Resize Handler
 window.addEventListener('resize', () => {
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
     renderer.setSize(container.clientWidth, container.clientHeight);
     ScrollTrigger.refresh();
 });
