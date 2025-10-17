@@ -19,20 +19,20 @@ loadingManager.onProgress = (url, loaded, total) => {
 
 loadingManager.onError = (url) => {
     console.error('Error loading:', url);
-    loadingScreen.innerHTML = '<p style="color: #ec4899;">Error: Check if model file exists at models/thixotropic-gel.glb</p>';
+    loadingScreen.innerHTML = '<p>Error: Check if model exists</p>';
 };
 
-// Three.js Scene Setup
+// Three.js Scene
 const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(
     35,
-    container.clientWidth / container.clientHeight,
+    1, // Fixed aspect ratio
     0.1,
     1000
 );
-camera.position.set(0, 0, 10);
+camera.position.set(0, 0, 8);
 
 const renderer = new THREE.WebGLRenderer({ 
     alpha: true, 
@@ -41,35 +41,34 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(container.clientWidth, container.clientHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.2;
+renderer.toneMappingExposure = 1.3;
 renderer.outputEncoding = THREE.sRGBEncoding;
 container.appendChild(renderer.domElement);
 
-// Lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+// Lighting - Brighter for cyan background
+const ambientLight = new THREE.AmbientLight(0xffffff, 1);
 scene.add(ambientLight);
 
-const keyLight = new THREE.DirectionalLight(0xffffff, 1.5);
+const keyLight = new THREE.DirectionalLight(0xffffff, 1.8);
 keyLight.position.set(5, 5, 5);
 scene.add(keyLight);
 
-const fillLight = new THREE.DirectionalLight(0x667eea, 0.8);
+const fillLight = new THREE.DirectionalLight(0x7dd3c0, 0.6);
 fillLight.position.set(-5, 0, -5);
 scene.add(fillLight);
 
-const rimLight = new THREE.DirectionalLight(0xec4899, 0.6);
+const rimLight = new THREE.DirectionalLight(0xffffff, 0.8);
 rimLight.position.set(0, -5, 3);
 scene.add(rimLight);
 
-// Controls
+// Controls - NO ZOOM
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.autoRotate = true;
 controls.autoRotateSpeed = 2;
-controls.enableZoom = true;
-controls.minDistance = 5;
-controls.maxDistance = 20;
+controls.enableZoom = false; // DISABLED
+controls.enablePan = false;
 
 // Load Model
 const loader = new GLTFLoader(loadingManager);
@@ -80,7 +79,7 @@ loader.load(
     (gltf) => {
         model = gltf.scene;
         
-        // Center and scale
+        // Center and scale BIGGER
         const box = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
@@ -88,7 +87,7 @@ loader.load(
         model.position.sub(center);
         
         const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 4 / maxDim;
+        const scale = 5 / maxDim; // BIGGER
         model.scale.setScalar(scale);
         
         // Tilt
@@ -98,7 +97,6 @@ loader.load(
         scene.add(model);
         console.log('✓ Model loaded');
         
-        // Initialize scroll animations
         initScrollAnimations();
     },
     (progress) => {
@@ -108,7 +106,7 @@ loader.load(
     },
     (error) => {
         console.error('Model error:', error);
-        loadingScreen.innerHTML = '<p style="color: #ec4899;">Model loading failed. Check console.</p>';
+        loadingScreen.innerHTML = '<p>Model failed to load</p>';
     }
 );
 
@@ -120,19 +118,14 @@ function animate() {
 }
 animate();
 
-// Initialize Lenis AFTER DOM loads
+// Lenis Smooth Scroll
 let lenis;
 
 window.addEventListener('load', () => {
-    // Lenis Smooth Scroll
     lenis = new Lenis({
         duration: 1.2,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        direction: 'vertical',
-        gestureDirection: 'vertical',
         smooth: true,
-        smoothTouch: false,
-        touchMultiplier: 2,
     });
 
     function raf(time) {
@@ -141,18 +134,12 @@ window.addEventListener('load', () => {
     }
     requestAnimationFrame(raf);
 
-    // GSAP Integration
     gsap.registerPlugin(ScrollTrigger);
-    
     lenis.on('scroll', ScrollTrigger.update);
-    
-    gsap.ticker.add((time) => {
-        lenis.raf(time * 1000);
-    });
-    
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
     
-    console.log('✓ Lenis initialized');
+    console.log('✓ Lenis ready');
 });
 
 // Scroll Animations
@@ -172,13 +159,11 @@ function initScrollAnimations() {
             onUpdate: (self) => {
                 const progress = self.progress;
                 
-                // Move container
                 gsap.to(container, {
                     x: `${targetX * progress}vw`,
                     duration: 0.3,
                 });
                 
-                // Rotate model
                 if (model) {
                     gsap.to(model.rotation, {
                         y: rotationY * progress,
@@ -189,7 +174,7 @@ function initScrollAnimations() {
         });
     });
     
-    // CTA: Return to center
+    // CTA: Center
     ScrollTrigger.create({
         trigger: '.cta-section',
         start: 'top center',
@@ -198,7 +183,7 @@ function initScrollAnimations() {
         onUpdate: (self) => {
             gsap.to(container, {
                 x: 0,
-                scale: 1.2,
+                scale: 1.3,
                 duration: 0.5,
             });
             
@@ -213,7 +198,7 @@ function initScrollAnimations() {
         }
     });
     
-    console.log('✓ Scroll animations ready');
+    console.log('✓ Animations ready');
 }
 
 // Copy Coupon
@@ -239,10 +224,8 @@ copyBtn.addEventListener('click', () => {
     });
 });
 
-// Resize Handler
+// Resize
 window.addEventListener('resize', () => {
-    camera.aspect = container.clientWidth / container.clientHeight;
-    camera.updateProjectionMatrix();
     renderer.setSize(container.clientWidth, container.clientHeight);
     ScrollTrigger.refresh();
 });
