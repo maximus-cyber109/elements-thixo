@@ -113,14 +113,14 @@ body {
     z-index: 10;
 }
 
-/* 3D Canvas - BEHIND TEXT */
+/* 3D Canvas - PROPER SIZE & BEHIND TEXT */
 #canvas-container {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: clamp(400px, 60vw, 900px);
-    height: clamp(400px, 60vh, 900px);
+    width: clamp(350px, 50vw, 700px);
+    height: clamp(350px, 50vh, 700px);
     z-index: 5;
     pointer-events: none;
 }
