@@ -9,8 +9,8 @@
     --blue: #78c4d4;
     --purple: #667eea;
     --gradient: linear-gradient(135deg, #7dd3c0 0%, #78c4d4 50%, #667eea 100%);
-    --text-white: #ffffff;
-    --text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    --text-gradient: linear-gradient(135deg, #ffffff 0%, #e0f7ff 100%);
+    --text-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
 }
 
 html {
@@ -21,7 +21,7 @@ body {
     font-family: 'Space Grotesk', sans-serif;
     background: var(--gradient);
     background-attachment: fixed;
-    color: var(--text-white);
+    color: #ffffff;
     overflow-x: hidden;
 }
 
@@ -75,6 +75,7 @@ body {
     text-align: center;
     padding: 2rem;
     position: relative;
+    z-index: 10;
 }
 
 .brand {
@@ -83,6 +84,8 @@ body {
     letter-spacing: 10px;
     margin-bottom: 0.5rem;
     text-shadow: var(--text-shadow);
+    position: relative;
+    z-index: 10;
 }
 
 .product-name {
@@ -91,7 +94,14 @@ body {
     letter-spacing: -3px;
     line-height: 0.9;
     margin-bottom: 1rem;
-    text-shadow: var(--text-shadow);
+    background: var(--text-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3));
+    position: relative;
+    z-index: 10;
 }
 
 .product-tagline {
@@ -99,9 +109,11 @@ body {
     font-weight: 300;
     margin-bottom: 3rem;
     text-shadow: var(--text-shadow);
+    position: relative;
+    z-index: 10;
 }
 
-/* 3D Canvas - BIGGER & FIXED SIZE */
+/* 3D Canvas - BEHIND TEXT */
 #canvas-container {
     position: fixed;
     top: 50%;
@@ -109,7 +121,7 @@ body {
     transform: translate(-50%, -50%);
     width: clamp(400px, 60vw, 900px);
     height: clamp(400px, 60vh, 900px);
-    z-index: 1;
+    z-index: 5;
     pointer-events: none;
 }
 
@@ -123,6 +135,7 @@ body {
     opacity: 0.7;
     animation: bounce 2s infinite;
     text-shadow: var(--text-shadow);
+    z-index: 10;
 }
 
 @keyframes bounce {
@@ -130,14 +143,14 @@ body {
     50% { transform: translateY(-10px); }
 }
 
-/* Content Sections - NO WHITE BACKGROUND */
+/* Content Sections */
 .content-section {
     min-height: 100vh;
     display: flex;
     align-items: center;
     padding: 4rem clamp(1.5rem, 5vw, 6rem);
     position: relative;
-    z-index: 2;
+    z-index: 10;
 }
 
 .content-section[data-position="left"] {
@@ -151,14 +164,20 @@ body {
 .content-text {
     max-width: 600px;
     padding: 0;
-    color: var(--text-white);
+    color: #ffffff;
+    position: relative;
+    z-index: 10;
 }
 
 .content-text h3 {
     font-size: clamp(2rem, 4vw, 3rem);
     margin-bottom: 1.5rem;
-    text-shadow: var(--text-shadow);
     font-weight: 700;
+    background: var(--text-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.3));
 }
 
 .content-text p {
@@ -195,7 +214,7 @@ body {
     text-align: center;
     padding: 4rem 2rem;
     position: relative;
-    z-index: 2;
+    z-index: 10;
 }
 
 .discount-badge {
@@ -210,7 +229,7 @@ body {
     font-size: clamp(1.2rem, 2vw, 1.8rem);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     animation: pulse 2s infinite;
-    z-index: 10;
+    z-index: 15;
 }
 
 @keyframes pulse {
@@ -221,8 +240,12 @@ body {
 .cta-section h2 {
     font-size: clamp(2.5rem, 5vw, 4.5rem);
     margin-bottom: 1rem;
-    text-shadow: var(--text-shadow);
     font-weight: 700;
+    background: var(--text-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 2px 15px rgba(0, 0, 0, 0.3));
 }
 
 .cta-subtitle {
@@ -238,6 +261,8 @@ body {
     border-radius: 25px;
     margin-bottom: 2rem;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 15;
 }
 
 .coupon-label {
@@ -306,6 +331,8 @@ body {
     cursor: pointer;
     box-shadow: 0 15px 50px rgba(255, 255, 255, 0.3);
     transition: all 0.3s ease;
+    position: relative;
+    z-index: 15;
 }
 
 .shop-btn:hover {
@@ -324,6 +351,7 @@ body {
         height: 85vw;
         max-width: 500px;
         max-height: 500px;
+        z-index: 5;
     }
     
     .content-section {
@@ -379,6 +407,7 @@ body {
     
     .product-name {
         font-size: 3rem;
+        letter-spacing: -2px;
     }
     
     .product-tagline {
@@ -388,6 +417,7 @@ body {
     #canvas-container {
         width: 90vw;
         height: 90vw;
+        z-index: 5;
     }
     
     .scroll-hint {
